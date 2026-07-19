@@ -1,0 +1,17 @@
+# rendered output
+out/
+out_deck/
+out_reveal/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+
+# local env / secrets — never commit
+.env
+*.key
+
+# os
+Thumbs.db
+.DS_Store

@@ -1,0 +1,616 @@
+{
+  "name": "BlocUnited Carousel (Python)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "n_sched",
+      "name": "Schedule Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /data/carousel_engine && python main.py --research --fal --out /data/out_deck"
+      },
+      "id": "n_build",
+      "name": "Build Carousel (Python)",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "=/data/out_deck/caption.txt",
+        "options": {}
+      },
+      "id": "n_readcap",
+      "name": "Read Caption",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        380,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "id": "n_excap",
+      "name": "Extract Caption",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        560,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "=/data/out_deck/slide_*.png",
+        "options": {}
+      },
+      "id": "n_prevread",
+      "name": "Read Slides (Preview)",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        740,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "7067149354",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "additionalFields": {}
+      },
+      "id": "n_preview",
+      "name": "Preview To Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        920,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_TELEGRAM_CRED",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ready: true } }];"
+      },
+      "id": "n_collapse",
+      "name": "Collapse To Single Item",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "7067149354",
+        "message": "=Approve this carousel for posting?\n\n{{ $('Extract Caption').first().json.data }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "n_ask",
+      "name": "Ask For Approval",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_TELEGRAM_CRED",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "n_approved",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "=/data/out_deck/slide_*.png",
+        "options": {}
+      },
+      "id": "n_pubread",
+      "name": "Read Slides (Publish)",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1660,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "name": "={{ $binary.data.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1kqE-p82pOgMttt7hKn6YoRhBxwZHNL0u",
+          "mode": "list",
+          "cachedResultName": "Frame",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1kqE-p82pOgMttt7hKn6YoRhBxwZHNL0u"
+        },
+        "options": {}
+      },
+      "id": "n_drive",
+      "name": "Upload Slide To Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1840,
+        180
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_DRIVE_CRED",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/media",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "={{ $env.BLOTATO_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "=https://drive.google.com/uc?export=download&id={{ $('Upload Slide To Drive').item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n_blmedia",
+      "name": "Upload Media To Blotato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2020,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "url"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n_agg",
+      "name": "Aggregate Media URLs",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "={{ $env.BLOTATO_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"9752\",\n    \"content\": {\n      \"text\": \"{{ $('Extract Caption').first().json.data }}\\n\\nNew AI tools and founder conversations inside our community. Tap the link in our bio to join.\",\n      \"mediaUrls\": {{ JSON.stringify($json.url.filter(u => u)) }},\n      \"platform\": \"instagram\"\n    },\n    \"target\": {\n      \"targetType\": \"instagram\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "n_ig",
+      "name": "[Instagram] Publish via Blotato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "={{ $env.BLOTATO_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"6649\",\n    \"content\": {\n      \"text\": \"{{ $('Extract Caption').first().json.data }}\\n\\nJoin our community for new AI tools and to connect with fellow founders.\\n\\nhttps://blocunited.com/newsletter\",\n      \"mediaUrls\": {{ JSON.stringify($json.url.filter(u => u)) }},\n      \"platform\": \"facebook\"\n    },\n    \"target\": {\n      \"targetType\": \"facebook\",\n      \"pageId\": \"105432422174069\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "n_fb",
+      "name": "[Facebook] Publish via Blotato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "={{ $env.BLOTATO_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"4675\",\n    \"content\": {\n      \"text\": \"{{ $('Extract Caption').first().json.data }}\\n\\nJoin our community for new AI tools and to connect with fellow founders.\\n\\nhttps://blocunited.com/newsletter\",\n      \"mediaUrls\": {{ JSON.stringify($json.url.filter(u => u)) }},\n      \"platform\": \"twitter\"\n    },\n    \"target\": {\n      \"targetType\": \"twitter\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "n_x",
+      "name": "[X] Publish via Blotato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "={{ $env.BLOTATO_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"REPLACE_WITH_LINKEDIN_ACCOUNT_ID\",\n    \"content\": {\n      \"text\": \"{{ $('Extract Caption').first().json.data }}\\n\\nJoin our community for new AI tools and to connect with fellow founders.\\n\\nhttps://blocunited.com/newsletter\",\n      \"mediaUrls\": {{ JSON.stringify($json.url.filter(u => u)) }},\n      \"platform\": \"linkedin\"\n    },\n    \"target\": {\n      \"targetType\": \"linkedin\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "n_li",
+      "name": "[LinkedIn] Publish via Blotato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendMessage",
+        "chatId": "7067149354",
+        "text": "Carousel rejected. Nothing was posted.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "n_reject",
+      "name": "Notify Rejected",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1660,
+        460
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_TELEGRAM_CRED",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "width": 900,
+        "height": 300,
+        "content": "## BlocUnited Carousel (Fully Python + Approval)\nn8n = trigger, Telegram approval, Drive hosting, Blotato publishing. Creative = Python.\n\n**Host:** `carousel_engine/` at `/data/carousel_engine`, `pip install pillow requests`.\n**Env:** `OPENAI_API_KEY`, `TAVILY_API_KEY`, `FAL_KEY`, `BLOTATO_API_KEY`.\nAdjust `/data/...` paths + Telegram chatId to yours."
+      },
+      "id": "n_note1",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "width": 540,
+        "height": 180,
+        "content": "## Before first run\n- Share Drive **\"Frame\"** folder *Anyone with link*.\n- Set **LinkedIn** accountId.\n- Map Google Drive + Telegram creds on import."
+      },
+      "id": "n_note2",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2360,
+        -180
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Daily": {
+      "main": [
+        [
+          {
+            "node": "Build Carousel (Python)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Carousel (Python)": {
+      "main": [
+        [
+          {
+            "node": "Read Caption",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Caption": {
+      "main": [
+        [
+          {
+            "node": "Extract Caption",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Caption": {
+      "main": [
+        [
+          {
+            "node": "Read Slides (Preview)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Slides (Preview)": {
+      "main": [
+        [
+          {
+            "node": "Preview To Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preview To Telegram": {
+      "main": [
+        [
+          {
+            "node": "Collapse To Single Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse To Single Item": {
+      "main": [
+        [
+          {
+            "node": "Ask For Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask For Approval": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Read Slides (Publish)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Slides (Publish)": {
+      "main": [
+        [
+          {
+            "node": "Upload Slide To Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Slide To Drive": {
+      "main": [
+        [
+          {
+            "node": "Upload Media To Blotato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Media To Blotato": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Media URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Media URLs": {
+      "main": [
+        [
+          {
+            "node": "[Instagram] Publish via Blotato",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "[Facebook] Publish via Blotato",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "[X] Publish via Blotato",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "[LinkedIn] Publish via Blotato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

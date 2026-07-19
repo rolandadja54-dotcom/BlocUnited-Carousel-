@@ -1,0 +1,1211 @@
+{
+  "name": "News Carousel Flow (Simplified)",
+  "nodes": [
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"slides\": [\n    {\n      \"slide_number\": 1,\n      \"text\": \"string\"\n    },\n    {\n      \"slide_number\": 2,\n      \"text\": \"string\"\n    },\n    {\n      \"slide_number\": 3,\n      \"text\": \"string\"\n    },\n    {\n      \"slide_number\": 4,\n      \"text\": \"string\"\n    },\n    {\n      \"slide_number\": 5,\n      \"text\": \"string\"\n    },\n    {\n      \"slide_number\": 6,\n      \"text\": \"Follow @BlocUnited for daily AI updates\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -3088,
+        3808
+      ],
+      "id": "264cd7ed-3f68-4d6f-bb5d-2a0afd29831f",
+      "name": "Slides Output Parser"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 16,
+              "triggerAtMinute": null
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -4688,
+        3456
+      ],
+      "id": "254e12a8-1699-461b-b1c1-728d2dbe9fa1",
+      "name": "Schedule Daily2"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Search for real-time AI news. Input must include a \"query\" field.",
+        "method": "POST",
+        "url": "=https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"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\",\n  \"query\": \"{{ $fromAI('query') }}\",\n  \"search_depth\": \"advanced\",\n  \"max_results\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -4448,
+        3264
+      ],
+      "id": "2e3cca26-5ebd-4a5b-adf0-870c6765be0d",
+      "name": "Tavily Tool2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Find the most important AI, tech, and startup news from the last 7 days. Use the Tavily tool to gather verified information.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "# AI News Research Agent\n\n## ROLE\nYou are a senior research intelligence agent specialized in:\n- Trending AI breakthroughs\n- AI agent developments\n- AI in coding and software engineering\n- Country level AI advancements (US, UK, China, Nigeria, India)\n\nYou MUST use the Tavily research tool at least 3 times to gather real-time, verifiable information before producing the final output.\n\n## RESEARCH STRATEGY\n1. Run focused, high signal Tavily queries. Examples: \"latest AI agent news this week\", \"AI coding tools released this month\", \"AI breakthroughs October 2025\".\n2. Cross reference claims across reputable sources.\n3. Prioritize news published in the last 7 days.\n4. Capture publication date, country, and source for every story.\n\n## QUALITY RULES\n- Never fabricate facts.\n- Skip low quality blogs and opinion pieces.\n- Stay analytical. No hype language.\n\n## OUTPUT FORMAT RULES (CRITICAL)\nReturn ONLY a single valid JSON object. NO markdown fences. NO ```json. NO commentary before or after. NO trailing text.\n\nThe JSON object MUST have these EXACT top level keys, every key present, each holding an array (use empty array if no items found):\n- trending_ai_news\n- ai_agents_updates\n- ai_coding_news\n\nIf you cannot find any items for a category, return an empty array for that key. NEVER omit a key. NEVER return a partial schema. NEVER return prose.\n\nEvery item inside an array MUST include: headline, source, date (YYYY-MM-DD), summary, url. trending_ai_news items also include country and why_it_matters. ai_agents_updates items also include key_takeaway. ai_coding_news items also include company_or_tool, country, developer_impact.\n\nAt minimum return 2 items per category. Target 3 items per category. Total target 9 items."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -4448,
+        3456
+      ],
+      "id": "ddcf8a2c-688d-42cc-8ccb-a664f26eca2f",
+      "name": "Research AI News2"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"trending_ai_news\": [\n    {\n      \"headline\": \"string\",\n      \"source\": \"string\",\n      \"date\": \"YYYY-MM-DD\",\n      \"country\": \"string\",\n      \"summary\": \"string\",\n      \"why_it_matters\": \"string\",\n      \"url\": \"string\"\n    }\n  ],\n  \"ai_agents_updates\": [\n    {\n      \"headline\": \"string\",\n      \"source\": \"string\",\n      \"date\": \"YYYY-MM-DD\",\n      \"summary\": \"string\",\n      \"key_takeaway\": \"string\",\n      \"url\": \"string\"\n    }\n  ],\n  \"ai_coding_news\": [\n    {\n      \"headline\": \"string\",\n      \"company_or_tool\": \"string\",\n      \"country\": \"string\",\n      \"date\": \"YYYY-MM-DD\",\n      \"summary\": \"string\",\n      \"developer_impact\": \"string\",\n      \"url\": \"string\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -4256,
+        3264
+      ],
+      "id": "6676e0e8-15b3-416a-a7e1-82e1bc9a3f7d",
+      "name": "Research Output Parser2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -4208,
+        3904
+      ],
+      "id": "8498f265-1f8a-4870-8d84-15119451c95e",
+      "name": "GPT Shared2",
+      "credentials": {
+        "openAiApi": {
+          "id": "PJLgVMNpJ0yoNHOh",
+          "name": "BlocUnited"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function coerce(value) {\n  if (value == null) return null;\n  if (typeof value === \"object\") return value;\n  if (typeof value === \"string\") {\n    let s = value.replace(/```json/gi, \"\").replace(/```/g, \"\").trim();\n    const first = s.indexOf(\"{\");\n    const last = s.lastIndexOf(\"}\");\n    if (first !== -1 && last !== -1 && last > first) {\n      s = s.slice(first, last + 1);\n    }\n    try { return JSON.parse(s); } catch { return null; }\n  }\n  return null;\n}\n\nlet data = $json.output ?? $json;\nlet parsed = coerce(data);\n\nif (!parsed) {\n  throw new Error(\"Research agent returned unparseable output.\\n\\nRaw output:\\n\" + JSON.stringify(data).slice(0, 1500));\n}\n\nif (parsed.output && typeof parsed.output === \"object\") {\n  parsed = parsed.output;\n}\n\nconst categoryMap = {\n  trending_ai_news: (item) => ({\n    headline: item.headline || \"\",\n    summary: item.summary || item.why_it_matters || \"\",\n    source: item.source || \"\",\n    date: item.date || \"\",\n    url: item.url || \"\",\n    category: \"trending_ai_news\"\n  }),\n  ai_agents_updates: (item) => ({\n    headline: item.headline || \"\",\n    summary: item.summary || item.key_takeaway || \"\",\n    source: item.source || \"\",\n    date: item.date || \"\",\n    url: item.url || \"\",\n    category: \"ai_agents_updates\"\n  }),\n  ai_coding_news: (item) => ({\n    headline: item.headline || \"\",\n    summary: item.summary || item.developer_impact || \"\",\n    source: item.source || \"\",\n    date: item.date || \"\",\n    url: item.url || \"\",\n    category: \"ai_coding_news\"\n  })\n};\n\nconst allItems = [];\nfor (const [key, mapper] of Object.entries(categoryMap)) {\n  const arr = parsed[key];\n  if (Array.isArray(arr)) {\n    arr.forEach(item => {\n      if (item && (item.headline || item.summary)) {\n        allItems.push({ json: mapper(item) });\n      }\n    });\n  }\n}\n\nif (allItems.length === 0) {\n  throw new Error(\"Research agent returned no news items. Parsed payload:\\n\" + JSON.stringify(parsed).slice(0, 1500));\n}\n\nreturn allItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4160,
+        3456
+      ],
+      "id": "c469e2e7-be47-471d-815a-d987e4ffc45b",
+      "name": "Flatten News2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -3984,
+        3456
+      ],
+      "id": "0e002503-67ac-4ce8-bfd9-abf2fbebe30f",
+      "name": "Pick One Story2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Story headline: {{ $json.headline }}\n\nStory summary: {{ $json.summary }}",
+        "options": {
+          "systemMessage": "# AI Tech News Writer\n\n## ROLE\nYou are a professional AI, tech, and startup news writer optimized for social media virality.\n\nYou do NOT research. You do NOT search.\nYou receive exactly ONE verified story as input and transform it into a scroll stopping headline, factual summary, and caption.\n\n## STRICT FORMATTING RULES (CRITICAL)\nNEVER use em dashes (—) or en dashes (–) anywhere in your output. They read as AI generated.\nUse commas, periods, semicolons, or colons instead.\nExamples:\n- WRONG: \"OpenAI — a startup — released a new model\"\n- RIGHT: \"OpenAI, a startup, released a new model\"\n\nThis rule applies to every field: headline, facts, and caption.\n\n## HEADLINE ENGINEERING\nApply at least 2 psychological triggers:\n1. Pattern interruption: lead with something unexpected.\n2. Specificity: numbers, names, dollars.\n3. Stakes amplification: make the consequence felt.\n4. Curiosity gap: withhold just enough to force a swipe.\n\nHeadline rules:\n- Maximum 70 characters.\n- No clickbait that cannot be substantiated.\n- No questions. Statements perform better.\n- No emojis.\n\n## FACTS GENERATION\nWrite 4 to 6 factual sentences:\n1. Lead with the action. Who did what.\n2. Quantify where possible. Dollars, percentages, user counts, timelines.\n3. Name specific companies, people, products.\n4. Include stakes. Who wins, who loses.\n5. Anchor with recency. When it happened.\n6. End with tension. What is still unresolved.\n\n### Product and Technology Emphasis\nPrioritize the product, technology, and functionality over financial details.\nFor acquisitions or funding stories, focus on:\n- Core capabilities and features.\n- The problem being solved and why it matters.\n- How the technology fits into the acquiring company's ecosystem.\n\nFinancial details are supporting context only, never the centerpiece.\n\nFacts rules:\n- No opinion or analysis.\n- No words like groundbreaking, revolutionary, exciting.\n- No speculation about the future.\n- Every sentence must be verifiable.\n\n## CAPTION\nOne sentence with 1 to 3 emojis plus 2 to 4 hashtags optimized for Instagram and X.\n\nStructure: [Emoji] + [Emotion trigger] + [Core fact] + [Emoji optional]\n\nExamples:\n- \"🚨 This changes everything for AI developers. 🔥\"\n- \"💰 $6.6 billion just changed the AI game forever.\"\n- \"⚡ The AI arms race just got real.\"\n\nCaption rules:\n- Under 125 characters before hashtags.\n- 1 to 3 emojis only.\n- No questions.\n- No \"Breaking:\" or \"JUST IN:\".\n\nApproved hashtags (pick 2 to 4):\n#AI, #ArtificialIntelligence, #TechNews, #Startups, #OpenAI, #Google, #NVIDIA, #MachineLearning, #FutureOfAI, #BigTech, #VentureCapital, #AINews\n\n## OUTPUT FORMAT\nReturn ONLY valid JSON. No markdown, no preamble.\n\n```json\n{\n  \"news\": [\n    {\n      \"headline\": \"\",\n      \"facts\": \"\",\n      \"caption\": \"\"\n    }\n  ]\n}\n```"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -3808,
+        3456
+      ],
+      "id": "76db57d3-8390-4ef2-aebf-9f4cf3d14332",
+      "name": "Write Post Copy2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allInputs = $input.all();\nlet allNewsItems = [];\n\nfor (const input of allInputs) {\n  let raw = input.json.output ?? input.json;\n\n  if (typeof raw === \"string\") {\n    raw = raw.replace(/```json/gi, \"\").replace(/```/g, \"\").trim();\n    try {\n      raw = JSON.parse(raw);\n    } catch (err) {\n      continue;\n    }\n  }\n\n  if (Array.isArray(raw?.news)) {\n    raw.news.forEach(item => {\n      allNewsItems.push({\n        headline: item.headline || \"\",\n        summary: item.facts || item.summary || \"\",\n        caption: item.caption || \"\"\n      });\n    });\n  }\n}\n\nif (allNewsItems.length === 0) {\n  throw new Error(\"No news items found.\");\n}\n\nconst selected = allNewsItems[Math.floor(Math.random() * allNewsItems.length)];\nreturn [{ json: selected }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3488,
+        3456
+      ],
+      "id": "aebb56e5-9ab0-40eb-821a-204fcc69917b",
+      "name": "Format Post2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a3cfd67-fc87-4512-a9af-1445b0bce3aa",
+              "name": "headline",
+              "value": "={{ $json.headline }}",
+              "type": "string"
+            },
+            {
+              "id": "a4c1c31b-7e07-4167-b5ef-25e4acd271a6",
+              "name": "summary",
+              "value": "={{ $json.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "712dc96d-5d6a-495a-a335-a1231f050401",
+              "name": "caption",
+              "value": "={{ $json.caption }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3328,
+        3456
+      ],
+      "id": "c5e5464b-ed0e-42c2-9392-50543ac91f31",
+      "name": "Set Story Fields2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/nano-banana-pro/edit",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Key dd12148b-9710-4a82-9b90-ec7b8a5456b5:473506ccc3878d49f7b70b7a97827b2c"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"resolution\": \"1K\",\n  \"aspect_ratio\": \"4:5\",\n  \"output_format\": \"png\",\n  \"prompt\": \"Create a cinematic, hyper realistic news cover image for Instagram.\\n\\nABSOLUTE TEXT RULE: Do NOT use em dashes, en dashes, or any dash character in the rendered headline. Use commas, periods, or colons only.\\n\\n## IMAGE STRUCTURE\\n\\nThe image is divided into two zones:\\n\\nUPPER ZONE (70% of image): A dramatic, photorealistic scene that visualizes the news story. This must look like a still from a Hollywood film or award winning photojournalism.\\n\\nLOWER ZONE (30% of image): Pure black gradient fading upward into the scene. This area contains ONLY the headline text. No other elements.\\n\\n---\\n\\n## SCENE DIRECTION\\n\\nNews Context: {{ $('Set Story Fields2').item.json.summary }}\\n\\nHeadline: {{ $('Set Story Fields2').item.json.headline }}\\n\\nVisualize this story using these creative principles:\\n\\n**DRAMATIC LIGHTING:** Use high contrast cinematic lighting. Strong key light from one side. Deep shadows. Volumetric light rays where appropriate.\\n\\n**DEPTH AND SCALE:** Create a sense of epic scale. Use foreground elements slightly out of focus. Mid ground subject in sharp focus. Background with atmospheric haze or bokeh.\\n\\n**VISUAL METAPHOR:** Do not just show literal objects. Find a powerful visual metaphor that captures the FEELING of the story. Money = sleek metallic textures.\\n\\n**EMOTION FIRST:** The image should evoke awe, tension, curiosity, or urgency before the viewer reads a single word.\\n\\n---\\n\\n## HUMAN SUBJECTS\\n\\nHumans in this image MUST look like real photographed people, not AI renders. This is the single most important quality marker.\\n\\nRequired realism details on every face:\\n- Visible skin pores, fine lines, faint blemishes, slight redness around the nose or ears\\n- Subtle asymmetry between the left and right side of the face\\n- Natural skin tone variation across forehead, cheeks, and jaw. Cheeks slightly flushed, T zone slightly oilier, undereye area slightly darker\\n- Individual hair strands with flyaways. NOT a smooth helmet of hair\\n- A real micro expression caught mid moment: a slight squint, a half open mouth mid sentence, a furrowed brow, eyes glancing slightly off camera\\n- Real teeth if visible: not toothpaste white, slight irregularity in shade or spacing\\n- Clothing has natural creases and visible fabric weave. Collars sit imperfectly\\n- Hands, if visible, have correct anatomy with five fingers and visible knuckles. Hide hands if uncertain\\n\\nLens behavior on faces:\\n- Tack sharp focus on the eyes with realistic catchlights from the practical light source\\n- Skin texture preserved, NOT smoothed or airbrushed\\n- DSLR shallow depth of field with natural bokeh falloff\\n\\nForbidden on humans:\\n- No plastic, waxy, or airbrushed skin\\n- No symmetrical doll like faces\\n- No glowing or unnaturally bright eyes\\n- No magazine retouching aesthetic\\n- No uncanny valley features (melting parts, misaligned eyes, extra fingers)\\n\\nPublic figure associations:\\n- Meta or Facebook story = Mark Zuckerberg likeness\\n- US Government or Policy = Donald Trump likeness\\n- China or Chinese tech = Xi Jinping likeness\\n- Tesla, SpaceX, or xAI = Elon Musk likeness\\n- OpenAI = Sam Altman likeness\\n- Anthropic = Dario Amodei likeness\\n- Google or Alphabet = Sundar Pichai likeness\\n- NVIDIA = Jensen Huang likeness with his signature black leather jacket\\n- Microsoft = Satya Nadella likeness\\n\\nIf no specific figure fits, use an anonymous real looking person such as a researcher at a workstation, an engineer reviewing a screen, or a worker on a factory floor. They must look like a real stranger, not a stock model.\\n\\n---\\n\\n## BRAND AND LOGO TREATMENT\\n\\nIf a company is central to the story:\\n- Integrate their actual logo INTO the cinematic scene naturally\\n- Logo should appear on screens, buildings, devices, or reflective surfaces\\n- Match logo lighting to scene lighting (shadows, reflections, glow)\\n- Logo must ONLY appear in upper zone, never in black headline area\\n\\n---\\n\\n## HEADLINE TEXT REQUIREMENTS\\n\\nHeadline: {{ $('Set Story Fields2').item.json.headline }}\\n\\nPlacement: Centered in the lower black gradient zone\\n\\nTypography:\\n- Clean, bold, modern sans serif font\\n- Primary color: Pure white (#FFFFFF)\\n- Accent color (for emphasis on 1-2 key words): Deep blue (#405DA0)\\n- Size: Fill 65-70% of the black zone height\\n- Tracking: Slightly expanded for readability\\n\\nFORBIDDEN: No yellow, red, orange, gold, or gradient text colors. No decorative fonts. No text effects or shadows.\\n\\n---\\n\\n## VISUAL QUALITY STANDARDS\\n\\n- Photorealistic, not illustrated or stylized\\n- Shot on RED Komodo or ARRI Alexa aesthetic\\n- Natural film grain (subtle)\\n- No AI artifacts, smooth plastic skin, or uncanny valley faces\\n- No floating objects or physically impossible compositions\\n- No generic stock photo energy\\n\\n---\\n\\n## FORBIDDEN ELEMENTS\\n\\n- No logos from reference image\\n- No watermarks\\n- No text in upper scene area (only headline in black zone)\\n- No emojis or icons\\n- No cluttered compositions\\n- No flat lighting\\n- No cartoonish or illustrated style\",\n  \"image_urls\": [\n    \"https://i.ibb.co/jvB4Bxg4/immage.png\"\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3088,
+        3296
+      ],
+      "id": "a3822da8-42fc-4bd7-917e-44fb74f180ad",
+      "name": "Submit Cover Job2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.status_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Key dd12148b-9710-4a82-9b90-ec7b8a5456b5:473506ccc3878d49f7b70b7a97827b2c"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2864,
+        3296
+      ],
+      "id": "b7ed2277-f48c-42ba-b638-c16233dc95ab",
+      "name": "Check Cover Status2"
+    },
+    {
+      "parameters": {
+        "amount": 9
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2656,
+        3296
+      ],
+      "id": "da3208f2-2171-44c4-be90-00d6f4e6cdd0",
+      "name": "Wait For Cover2",
+      "webhookId": "c71fbe60-69d9-4b4d-addb-f244e6123437"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "57578858-906e-4c4f-bb62-57a663cfc240",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "COMPLETED",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2432,
+        3296
+      ],
+      "id": "284a7e94-724c-4450-a5c4-45b7f9da432c",
+      "name": "Cover Ready?2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.response_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Key dd12148b-9710-4a82-9b90-ec7b8a5456b5:473506ccc3878d49f7b70b7a97827b2c"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2208,
+        3280
+      ],
+      "id": "865304ce-4c5e-41d0-b194-9777951230fc",
+      "name": "Get Cover URL2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.images[0].url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2016,
+        3280
+      ],
+      "id": "b51ad3b2-b4c3-4f24-bce7-d065b24abfff",
+      "name": "Download Cover2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Set Story Fields2').item.json.headline }}\n\n{{ $('Set Story Fields2').item.json.summary }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "## ROLE\nYou are a Viral Instagram Carousel Writer.\n\nYou receive ONE AI tech news story (headline plus summary).\nYou produce EXACTLY 6 slides for a scroll stopping Instagram carousel.\n\n## STRICT FORMATTING RULES (CRITICAL)\nNEVER use em dashes (—) or en dashes (–) anywhere in your slide text. They read as AI generated.\nUse commas, periods, semicolons, or colons instead.\nThis rule is absolute and applies to every slide.\n\n## SLIDE STRUCTURE (NON NEGOTIABLE)\nSlide 1: headline. Short, punchy, scroll stopping. Under 14 words.\nSlide 2: hook. Curiosity opener that pulls the reader in. Under 14 words.\nSlide 3: core explanation. Two paragraphs in ONE string separated by exactly \\n\\n.\nSlide 4: context or integration. Two paragraphs in ONE string separated by exactly \\n\\n.\nSlide 5: closing impact. ONE concise statement on why this matters.\nSlide 6: MUST be EXACTLY this string: Follow @BlocUnited for daily AI updates\n\n## PARAGRAPH RULES FOR SLIDES 3 AND 4\nEach paragraph: 10 to 15 words.\nTotal per slide: 20 to 30 words.\nMax 180 characters per slide.\nSeparator: exactly \\n\\n between the two paragraphs.\n\n## TONE\nPunchy, factual, no hype words.\nNo questions in slides 1, 2, or 5.\nNo opinions or speculation.\nKeep all original entities (companies, people, products).\n\n## OUTPUT FORMAT (STRICT)\nReturn ONLY a JSON object that matches this schema. No markdown fences. No preamble.\n\n{\n  \"slides\": [\n    { \"slide_number\": 1, \"text\": \"\" },\n    { \"slide_number\": 2, \"text\": \"\" },\n    { \"slide_number\": 3, \"text\": \"\" },\n    { \"slide_number\": 4, \"text\": \"\" },\n    { \"slide_number\": 5, \"text\": \"\" },\n    { \"slide_number\": 6, \"text\": \"Follow @BlocUnited for daily AI updates\" }\n  ]\n}\n\n## VALIDATION CHECKLIST\nValid JSON. Exactly 6 slides. slide_number 1 to 6. Each slide has slide_number and text. Slide 6 is exact. Slides 3 and 4 obey paragraph and length rules. ZERO em dashes anywhere."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -3088,
+        3616
+      ],
+      "id": "7e75716f-6ece-4224-bb28-41d357e4dd51",
+      "name": "Generate Slides2"
+    },
+    {
+      "parameters": {
+        "jsCode": "function extractJson(value) {\n  if (value && typeof value === \"object\") return value;\n  if (typeof value !== \"string\") return null;\n  const first = value.indexOf(\"{\");\n  const last = value.lastIndexOf(\"}\");\n  if (first === -1 || last === -1 || last <= first) return null;\n  try { return JSON.parse(value.slice(first, last + 1)); } catch (e) { return null; }\n}\n\n// The Agent + Structured Output Parser delivers a parsed object on $json.output.\n// Fall back to raw text / content only if that is ever missing.\nlet payload = $json.output ?? $json;\nlet parsed = (payload && typeof payload === \"object\") ? payload : extractJson(payload);\nif (!parsed) {\n  parsed = extractJson($json.text) || extractJson($json.content) || extractJson($json.output);\n}\n\nlet slides = null;\nif (parsed) {\n  if (Array.isArray(parsed.slides)) slides = parsed.slides;\n  else if (parsed.output && Array.isArray(parsed.output.slides)) slides = parsed.output.slides;\n}\n\nif (!slides || slides.length === 0) {\n  throw new Error(\"Missing slides array. Parsed payload:\\n\" + JSON.stringify(parsed ?? payload).slice(0, 1500));\n}\n\nreturn slides.map((slide, i) => ({\n  json: {\n    slide_number: typeof slide.slide_number === \"number\" ? slide.slide_number : i + 1,\n    text: typeof slide.text === \"string\" ? slide.text : String(slide.text ?? \"\")\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2800,
+        3616
+      ],
+      "id": "dcfa345c-3941-4438-b269-1110d6fb67ba",
+      "name": "Split Slides2"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1NXez5ysoALUx0LInzEiGuqQE3oYxR5q6",
+          "mode": "list",
+          "cachedResultName": "Carousel Slide Template 12.png",
+          "cachedResultUrl": "https://drive.google.com/file/d/1NXez5ysoALUx0LInzEiGuqQE3oYxR5q6/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2608,
+        3616
+      ],
+      "id": "1cded4df-2c19-484d-8c33-fe6469769e1e",
+      "name": "Download Template2",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "wvZvhsrXnBrEF7n8",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "text": "={{ $json.text }}",
+        "fontSize": 65,
+        "fontColor": "#FFFFFF",
+        "positionX": 100,
+        "positionY": 550,
+        "lineLength": 30,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        -2336,
+        3616
+      ],
+      "id": "80471e3b-1952-412c-a0cc-031fc2d5d694",
+      "name": "Overlay Slide Text2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1776,
+        3456
+      ],
+      "id": "d5844e20-a586-4212-9ef7-d8a9076f7a9e",
+      "name": "Combine Cover and Slides2"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "7067149354",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1536,
+        3456
+      ],
+      "id": "fe794565-25c9-4a73-b4a1-b4e3c846143e",
+      "name": "Preview to Telegram2",
+      "webhookId": "c4186a8d-8daa-4a00-9f97-ea33acd27f20",
+      "credentials": {
+        "telegramApi": {
+          "id": "AzU9k1yJYGnz7wND",
+          "name": "roland telegram"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ready: true } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1312,
+        3456
+      ],
+      "id": "3ba62276-eba7-4750-b73d-7489a9007d00",
+      "name": "Collapse To Single Item2"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "7067149354",
+        "message": "=Approve this carousel for posting?\n\nHeadline: {{ $('Set Story Fields2').item.json.headline }}\n\nCaption: {{ $('Set Story Fields2').item.json.caption }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1088,
+        3456
+      ],
+      "id": "92efd4e7-a9b8-4155-b0e1-3d18c9b224b5",
+      "name": "Ask For Approval2",
+      "webhookId": "c4186a8d-8daa-4a00-9f97-ea33acd27f20",
+      "credentials": {
+        "telegramApi": {
+          "id": "AzU9k1yJYGnz7wND",
+          "name": "roland telegram"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2548d187-79c4-48ac-8384-c60fcbcc017e",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -864,
+        3456
+      ],
+      "id": "6b465f06-ba63-49c5-a0cf-a94af4b5322a",
+      "name": "Approved?2"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "7067149354",
+        "message": "Reply with the changes you want me to make to the carousel.",
+        "responseType": "freeText",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -864,
+        3776
+      ],
+      "id": "35d9b7b2-a938-47e4-b568-466abe8aa58b",
+      "name": "Request Feedback2",
+      "webhookId": "c4186a8d-8daa-4a00-9f97-ea33acd27f20",
+      "credentials": {
+        "telegramApi": {
+          "id": "AzU9k1yJYGnz7wND",
+          "name": "roland telegram"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User feedback:\n{{ $json.data.text }}\n\nCurrent headline: {{ $('Set Story Fields2').item.json.headline }}\nCurrent summary: {{ $('Set Story Fields2').item.json.summary }}\nCurrent caption: {{ $('Set Story Fields2').item.json.caption }}",
+        "options": {
+          "systemMessage": "## ROLE\nYou are a professional AI news REWRITER.\nYou are NOT a researcher. You do NOT invent facts.\nYou receive:\n1. The current headline, summary, and caption.\n2. User feedback describing what to change.\n\nYou return a fully rewritten version that respects the feedback while preserving every original fact.\n\n## STRICT FORMATTING RULES (CRITICAL)\nNEVER use em dashes (—) or en dashes (–) in your output.\nUse commas, periods, semicolons, or colons.\nThis applies to headline, facts, and caption.\n\n## CORE RULES\nPreserve every original fact, number, company, person, product, and timeline.\nNever introduce new claims.\nApply the feedback precisely. Do not ignore it.\n\n## HEADLINE\nMax 70 characters. No questions. No emojis.\nMust still apply at least 2 of: pattern interruption, specificity, stakes amplification, curiosity gap.\n\n## FACTS\n4 to 6 sentences. No hype words. No opinions.\nKeep technical and product details intact.\n\n## CAPTION\nOne sentence. 1 to 3 emojis. Under 125 characters before hashtags.\n2 to 4 approved hashtags from: #AI, #ArtificialIntelligence, #TechNews, #Startups, #OpenAI, #Google, #NVIDIA, #MachineLearning, #FutureOfAI, #BigTech, #VentureCapital, #AINews.\n\n## OUTPUT FORMAT\nReturn ONLY valid JSON. No markdown fences. No preamble.\n\n```json\n{\n  \"news\": [\n    {\n      \"headline\": \"\",\n      \"facts\": \"\",\n      \"caption\": \"\"\n    }\n  ]\n}\n```"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        3776
+      ],
+      "id": "c03461a3-5a4a-446f-a21a-1a260efd025f",
+      "name": "Rewrite With Feedback2"
+    },
+    {
+      "parameters": {
+        "name": "carousel-image",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1kqE-p82pOgMttt7hKn6YoRhBxwZHNL0u",
+          "mode": "list",
+          "cachedResultName": "Frame",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1kqE-p82pOgMttt7hKn6YoRhBxwZHNL0u"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -432,
+        3440
+      ],
+      "id": "74ff1de6-0605-4787-a747-f6803d7a3042",
+      "name": "Upload Carousel To Drive2",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "wvZvhsrXnBrEF7n8",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/media",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "blt_6SqJrDqQhZJPp8dD9Ol+VglTbHvWWBCYHrd/5ktq1DE="
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "=https://drive.google.com/uc?export=download&id={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -256,
+        3440
+      ],
+      "id": "4c1a83cb-fff3-4160-86dc-75b9a84b03d6",
+      "name": "Upload Media To Blotato2",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "url"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        3440
+      ],
+      "id": "c2318a28-ce2e-4e59-b79d-ff3c4a799b60",
+      "name": "Aggregate Media URLs2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "blt_6SqJrDqQhZJPp8dD9Ol+VglTbHvWWBCYHrd/5ktq1DE="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"6649\",\n    \"content\": {\n      \"text\": \"{{ $('Set Story Fields2').first().json.caption }}\\n\\nJoin our community for new AI tools and to connect with fellow founders.\\n\\nhttps://blocunited.com/newsletter\",\n      \"mediaUrls\": {{ JSON.stringify($json.url.filter(u => u)) }},\n      \"platform\": \"facebook\"\n    },\n    \"target\": {\n      \"targetType\": \"facebook\",\n      \"pageId\": \"105432422174069\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        3440
+      ],
+      "id": "b4773fb4-0738-4718-aee7-ffe3328065de",
+      "name": "Post To Facebook2",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "blt_6SqJrDqQhZJPp8dD9Ol+VglTbHvWWBCYHrd/5ktq1DE="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"4675\",\n    \"content\": {\n      \"text\": \"{{ $('Set Story Fields2').first().json.caption }}\\n\\nJoin our community for new AI tools and to connect with fellow founders.\\n\\nhttps://blocunited.com/newsletter\",\n      \"mediaUrls\": {{ JSON.stringify($json.url.filter(u => u)) }},\n      \"platform\": \"twitter\"\n    },\n    \"target\": {\n      \"targetType\": \"twitter\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        3600
+      ],
+      "id": "20e6c3fb-42c9-4e1f-a2aa-be5c7043b354",
+      "name": "Post To X2",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $('Combine Cover and Slides2').all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        3440
+      ],
+      "id": "5046c84e-f43d-4cde-aa82-cdfffb623690",
+      "name": "Restore Carousel Items2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "=blt_6SqJrDqQhZJPp8dD9Ol+VglTbHvWWBCYHrd/5ktq1DE="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"9752\",\n    \"content\": {\n      \"text\": \"{{ $('Set Story Fields2').first().json.caption }}\\n\\nNew AI tools and founder conversations inside our community. Tap the link in our bio to join.\",\n      \"mediaUrls\": {{ JSON.stringify($json.url.filter(u => u)) }},\n      \"platform\": \"instagram\"\n    },\n    \"target\": {\n      \"targetType\": \"instagram\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        3280
+      ],
+      "id": "ec0a65a7-6dc3-46ea-b5b1-e67221f5622b",
+      "name": "[Instagram] Publish via Blotato2",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "blt_6SqJrDqQhZJPp8dD9Ol+VglTbHvWWBCYHrd/5ktq1DE="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"REPLACE_WITH_LINKEDIN_ACCOUNT_ID\",\n    \"content\": {\n      \"text\": \"{{ $('Set Story Fields2').first().json.caption }}\\n\\nJoin our community for new AI tools and to connect with fellow founders.\\n\\nhttps://blocunited.com/newsletter\",\n      \"mediaUrls\": {{ JSON.stringify($json.url.filter(u => u)) }},\n      \"platform\": \"linkedin\"\n    },\n    \"target\": {\n      \"targetType\": \"linkedin\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        3760
+      ],
+      "id": "a8d2a63e-835d-4fdc-b671-2671b801a59c",
+      "name": "[LinkedIn] Publish via Blotato1",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Slides Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Slides2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Daily2": {
+      "main": [
+        [
+          {
+            "node": "Research AI News2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily Tool2": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research AI News2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research AI News2": {
+      "main": [
+        [
+          {
+            "node": "Flatten News2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Research AI News2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT Shared2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research AI News2",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Write Post Copy2",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Rewrite With Feedback2",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Generate Slides2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten News2": {
+      "main": [
+        [
+          {
+            "node": "Pick One Story2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick One Story2": {
+      "main": [
+        [
+          {
+            "node": "Write Post Copy2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Post Copy2": {
+      "main": [
+        [
+          {
+            "node": "Format Post2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Post2": {
+      "main": [
+        [
+          {
+            "node": "Set Story Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Story Fields2": {
+      "main": [
+        [
+          {
+            "node": "Submit Cover Job2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Slides2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit Cover Job2": {
+      "main": [
+        [
+          {
+            "node": "Check Cover Status2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Cover Status2": {
+      "main": [
+        [
+          {
+            "node": "Wait For Cover2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Cover2": {
+      "main": [
+        [
+          {
+            "node": "Cover Ready?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cover Ready?2": {
+      "main": [
+        [
+          {
+            "node": "Get Cover URL2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Cover Status2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Cover URL2": {
+      "main": [
+        [
+          {
+            "node": "Download Cover2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Cover2": {
+      "main": [
+        [
+          {
+            "node": "Combine Cover and Slides2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Slides2": {
+      "main": [
+        [
+          {
+            "node": "Split Slides2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Slides2": {
+      "main": [
+        [
+          {
+            "node": "Download Template2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Template2": {
+      "main": [
+        [
+          {
+            "node": "Overlay Slide Text2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Overlay Slide Text2": {
+      "main": [
+        [
+          {
+            "node": "Combine Cover and Slides2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combine Cover and Slides2": {
+      "main": [
+        [
+          {
+            "node": "Preview to Telegram2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preview to Telegram2": {
+      "main": [
+        [
+          {
+            "node": "Collapse To Single Item2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse To Single Item2": {
+      "main": [
+        [
+          {
+            "node": "Ask For Approval2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask For Approval2": {
+      "main": [
+        [
+          {
+            "node": "Approved?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?2": {
+      "main": [
+        [
+          {
+            "node": "Restore Carousel Items2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Request Feedback2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Feedback2": {
+      "main": [
+        [
+          {
+            "node": "Rewrite With Feedback2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite With Feedback2": {
+      "main": [
+        [
+          {
+            "node": "Format Post2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Carousel To Drive2": {
+      "main": [
+        [
+          {
+            "node": "Upload Media To Blotato2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Media To Blotato2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Media URLs2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Media URLs2": {
+      "main": [
+        [
+          {
+            "node": "Post To Facebook2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Post To X2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "[Instagram] Publish via Blotato2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "[LinkedIn] Publish via Blotato1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Carousel Items2": {
+      "main": [
+        [
+          {
+            "node": "Upload Carousel To Drive2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "861e2a0c-5759-4843-a763-d9b7e5db66c6",
+  "meta": {
+    "instanceId": "abd9d289c9b620644a4ba47b4693561fd8ffed1d36423ce1581d2eb519a531c6"
+  },
+  "id": "PQp0vqgSu4gwKUrV",
+  "tags": []
+}
